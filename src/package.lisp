@@ -11,7 +11,9 @@
 (defpackage #:cl-compat
   (:use #:cl)
   (:export
-   ;; Feature detection
+   #:with-compat-timing
+   #:compat-batch-process
+   #:compat-health-check;; Feature detection
    #:when-feature
    #:if-feature
    #:feature-available-p

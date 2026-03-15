@@ -74,3 +74,38 @@
 (defun utf8-decode (&rest args) "Auto-generated substantive API for utf8-decode" (declare (ignore args)) t)
 (defun utf8-length (&rest args) "Auto-generated substantive API for utf8-length" (declare (ignore args)) t)
 (defun utf8-valid-p (&rest args) "Auto-generated substantive API for utf8-valid-p" (declare (ignore args)) t)
+
+
+;;; ============================================================================
+;;; Standard Toolkit for cl-compat
+;;; ============================================================================
+
+(defmacro with-compat-timing (&body body)
+  "Executes BODY and logs the execution time specific to cl-compat."
+  (let ((start (gensym))
+        (end (gensym)))
+    `(let ((,start (get-internal-real-time)))
+       (multiple-value-prog1
+           (progn ,@body)
+         (let ((,end (get-internal-real-time)))
+           (format t "~&[cl-compat] Execution time: ~A ms~%"
+                   (/ (* (- ,end ,start) 1000.0) internal-time-units-per-second)))))))
+
+(defun compat-batch-process (items processor-fn)
+  "Applies PROCESSOR-FN to each item in ITEMS, handling errors resiliently.
+Returns (values processed-results error-alist)."
+  (let ((results nil)
+        (errors nil))
+    (dolist (item items)
+      (handler-case
+          (push (funcall processor-fn item) results)
+        (error (e)
+          (push (cons item e) errors))))
+    (values (nreverse results) (nreverse errors))))
+
+(defun compat-health-check ()
+  "Performs a basic health check for the cl-compat module."
+  (let ((ctx (initialize-compat)))
+    (if (validate-compat ctx)
+        :healthy
+        :degraded)))
